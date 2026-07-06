@@ -1,0 +1,23 @@
+enum ActiveStatus {
+  ACTIVE
+  BLOCKED
+}
+
+enum Role {
+  CUSTOMER
+  PROVIDER
+  ADMIN
+}
+
+enum GearStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum RentalOrderStatus {
+  PLACED
+  CONFIRMED
+  PICKED_UP
+  RETURNED
+  CANCELLED
+}
