@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { JwtPayload, SignOptions } from "jsonwebtoken";
-import { Role } from "../../../generated/prisma/enums";
+import { ActiveStatus, Role } from "../../../generated/prisma/enums";
 import config from "../../config";
 import { prisma } from "../../lib/prisma";
 import { jwtUtils } from "../../utils/jwt";
@@ -84,9 +84,9 @@ const loginUser = async (payload: ILoginUser) => {
         where: { email },
     });
 
-    if (user.activeStatus === "BLOCKED") {
+    if (user.activeStatus === ActiveStatus.SUSPEND) {
         throw new Error(
-            "Your account has been blocked. Please contact support.",
+            "Your account has been suspended. Please contact support.",
         );
     }
 
@@ -155,8 +155,8 @@ const refreshToken = async (refreshToken: string) => {
         },
     });
 
-    if (user.activeStatus === "BLOCKED") {
-        throw new Error("User is blocked!");
+    if (user.activeStatus === ActiveStatus.SUSPEND) {
+        throw new Error("User is suspended!");
     }
 
     const jwtPayload = {

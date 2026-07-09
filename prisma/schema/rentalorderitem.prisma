@@ -11,10 +11,6 @@ model RentalOrderItem {
 
   dailyRentalPrice Decimal @db.Decimal(10,2)
 
-  rentalDays Int
-
-  subtotal Decimal @db.Decimal(10,2)
-
   createdAt DateTime @default(now())
 
   @@index([rentalOrderId])
