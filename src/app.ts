@@ -12,6 +12,7 @@ import { gearService } from "./modules/gear/gear.service";
 import { paymentsRoutes } from "./modules/payments/payments.routes";
 import { providerRoutes } from "./modules/provider/provider.routes";
 import { rentalsRoutes } from "./modules/rentals/rentals.routes";
+import { reviewRoutes } from "./reviews/review.routes";
 import { catchAsync } from "./utils/catchAsync";
 import { sendResponse } from "./utils/sendResponse";
 
@@ -44,6 +45,8 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/payments", paymentsRoutes);
 
 app.use("/api/gear", gearRoutes);
+
+app.use("/api/reviews", reviewRoutes);
 
 app.use(
     "/api/categories",
