@@ -11,7 +11,7 @@ const createPayment = catchAsync(
             req.params.id as string,
         );
 
-        console.log("result", result);
+        // console.log("result", result);
 
         sendResponse(res, {
             success: true,
@@ -53,8 +53,39 @@ const checkPayment = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const getMyPayments = catchAsync(async (req: Request, res: Response) => {
+    const result = await paymentsService.getMyPaymentsFromDB(
+        req.user!.id,
+        req.query,
+    );
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Payment history fetched successfully.",
+        meta: result.meta,
+        data: result.data,
+    });
+});
+
+const getPaymentDetails = catchAsync(async (req: Request, res: Response) => {
+    const result = await paymentsService.getPaymentDetailsFromDB(
+        req.user!.id as string,
+        req.params.id as string,
+    );
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Payment details fetched successfully.",
+        data: result,
+    });
+});
+
 export const paymentsController = {
     createPayment,
     verifyPayment,
     checkPayment,
+    getMyPayments,
+    getPaymentDetails,
 };

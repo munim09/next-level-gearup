@@ -92,10 +92,26 @@ const updateRentalOrderStatus = catchAsync(async (req, res) => {
     });
 });
 
+const updateGearStock = catchAsync(async (req: Request, res: Response) => {
+    const result = await providerService.updateGearStockIntoDB(
+        req.user!.id,
+        req.params.id as string,
+        req.body,
+    );
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Gear stock updated successfully.",
+        data: result,
+    });
+});
+
 export const providerController = {
     addGearToInventory,
     updateGearListing,
     removeGearFromInventory,
     getProviderOrders,
     updateRentalOrderStatus,
+    updateGearStock,
 };

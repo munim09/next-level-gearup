@@ -17,6 +17,12 @@ router.put(
     providerController.updateGearListing,
 );
 
+router.patch(
+    "/gear/:id",
+    auth(Role.PROVIDER),
+    providerController.updateGearStock,
+);
+
 router.delete(
     "/gear/:id",
     auth(Role.PROVIDER),

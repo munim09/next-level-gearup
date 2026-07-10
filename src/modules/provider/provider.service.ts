@@ -4,6 +4,7 @@ import { prisma } from "../../lib/prisma";
 import {
     ICreateGearPayload,
     IGetProviderOrdersQuery,
+    IUpdateGearStockPayload,
     IUpdateRentalOrderStatusPayload,
 } from "../provider/provider.interface";
 
@@ -252,6 +253,8 @@ const updateRentalOrderStatusIntoDB = async (
     const currentStatus = order.status;
     const nextStatus = payload.status;
 
+    if (!nextStatus) throw new Error("Wrong parameter found");
+
     switch (currentStatus) {
         case RentalOrderStatus.PLACED:
             if (
@@ -294,36 +297,6 @@ const updateRentalOrderStatusIntoDB = async (
         default:
             throw new Error("Invalid rental order status.");
     }
-
-    // const updatedOrder = await prisma.rentalOrder.update({
-    //     where: {
-    //         id: orderId,
-    //     },
-    //     data: {
-    //         status: nextStatus,
-    //     },
-    //     include: {
-    //         customer: {
-    //             select: {
-    //                 id: true,
-    //                 name: true,
-    //                 email: true,
-    //             },
-    //         },
-    //         provider: {
-    //             select: {
-    //                 id: true,
-    //                 name: true,
-    //                 email: true,
-    //             },
-    //         },
-    //         items: {
-    //             include: {
-    //                 gear: true,
-    //             },
-    //         },
-    //     },
-    // });
 
     const updatedOrder = await prisma.$transaction(async (tx) => {
         // Increase stock only when gear is returned
@@ -379,10 +352,50 @@ const updateRentalOrderStatusIntoDB = async (
     return updatedOrder;
 };
 
+const updateGearStockIntoDB = async (
+    providerId: string,
+    gearId: string,
+    payload: IUpdateGearStockPayload,
+) => {
+    const { stockQuantity } = payload;
+
+    if (!stockQuantity) throw new Error("Wrong input format");
+
+    if (stockQuantity < 0) {
+        throw new Error("Stock quantity cannot be negative.");
+    }
+
+    const gear = await prisma.gear.findFirst({
+        where: {
+            id: gearId,
+            providerId,
+        },
+    });
+
+    if (!gear) {
+        throw new Error("Gear not found.");
+    }
+
+    const updatedGear = await prisma.gear.update({
+        where: {
+            id: gearId,
+        },
+        data: {
+            stockQuantity,
+        },
+        include: {
+            category: true,
+        },
+    });
+
+    return updatedGear;
+};
+
 export const providerService = {
     addGearToInventory,
     updateGearListing,
     removeGearFromInventory,
     getProviderOrdersFromDB,
     updateRentalOrderStatusIntoDB,
+    updateGearStockIntoDB,
 };

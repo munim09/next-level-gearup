@@ -24,7 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(
     cors({
-        origin: `${config.app_url}:${config.port}`,
+        origin: `${config.app_url}`,
         credentials: true,
     }),
 );

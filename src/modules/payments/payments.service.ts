@@ -6,39 +6,7 @@ import {
 } from "../../../generated/prisma/enums";
 import config from "../../config";
 import { prisma } from "../../lib/prisma";
-
-// const initiatePayment = async (userId: string, orderId: String) => {
-//     const tranId = `TRNX_ID_${Date.now()}`;
-
-//     const paymentData = {
-//         store_id: "",
-//         store_passwd: "",
-//         total_amount: order.totalPrice,
-//         currency: "BDT",
-//         tran_id: tranId,
-//         success_url: `${config.app_url}/api/payment?orderId=${order.id}&tranId=${tranId}&status=success`,
-//         fail_url: `${config.app_url}/api/payment?orderId=${order.id}&tranId=${tranId}&status=fail`,
-//         cancel_url: `${config.app_url}/api/payment?orderId=${order.id}&tranId=${tranId}&status=cancel`,
-//         cus_name: user.name,
-//         cus_email: user.email,
-//         cus_add1: "N/A",
-//         cus_add2: "N/A",
-//         cus_city: "N/A",
-//         cus_state: "N/A",
-//         cus_postcode: 1000,
-//         cus_country: "Bangladesh",
-//         cus_phone: "01711111111",
-//         cus_fax: "01711111111",
-//     };
-
-//     const response = await axios.post(
-//         "https://sandbox.sslcommerz.com/gwprocess/v4/api.php",
-//         paymentData,
-//         {
-//             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-//         },
-//     );
-// };
+import { IGetPaymentsQuery } from "./payments.interface";
 
 const initiatePaymentIntoDB = async (
     customerId: string,
@@ -48,7 +16,6 @@ const initiatePaymentIntoDB = async (
         where: {
             id: rentalOrderId,
             customerId,
-            status: RentalOrderStatus.CONFIRMED,
         },
         include: {
             customer: true,
@@ -56,7 +23,7 @@ const initiatePaymentIntoDB = async (
     });
 
     if (!order) {
-        throw new Error("Rental order not found.");
+        throw new Error("Pending comfirm order not found.");
     }
 
     if (order.status !== RentalOrderStatus.CONFIRMED) {
@@ -74,11 +41,22 @@ const initiatePaymentIntoDB = async (
         throw new Error("Payment already completed.");
     }
 
+    // const pendingPayment = await prisma.payment.findFirst({
+    //     where: {
+    //         rentalOrderId,
+    //         status: PaymentStatus.PENDING,
+    //     },
+    // });
+
+    // if (pendingPayment) {
+    //     throw new Error("Payment already in progress.");
+    // }
+
     const tranId = crypto.randomUUID();
 
     const paymentData = {
-        store_id: "abc6a510484eae18",
-        store_passwd: "abc6a510484eae18@ssl",
+        store_id: config.ssl_store_id,
+        store_passwd: config.ssl_store_passwd,
 
         total_amount: Number(order.totalAmount),
 
@@ -86,11 +64,11 @@ const initiatePaymentIntoDB = async (
 
         tran_id: tranId,
 
-        success_url: `${config.app_url}:${config.port}/api/payments/confirm/success?tranId=${tranId}`,
+        success_url: `${config.app_url}/api/payments/confirm/success?tranId=${tranId}`,
 
-        fail_url: `${config.app_url}:${config.port}/api/payments/confirm/fail?tranId=${tranId}`,
+        fail_url: `${config.app_url}/api/payments/confirm/fail?tranId=${tranId}`,
 
-        cancel_url: `${config.app_url}:${config.port}/api/payments/confirm/cancel?tranId=${tranId}`,
+        cancel_url: `${config.app_url}/api/payments/confirm/cancel?tranId=${tranId}`,
 
         cus_name: order.customer.name,
         cus_email: order.customer.email,
@@ -134,7 +112,7 @@ const initiatePaymentIntoDB = async (
         throw new Error("Failed to initialize payment.");
     }
 
-    console.log("response.data", response.data);
+    // console.log("response.data", response.data);
 
     await prisma.payment.create({
         data: {
@@ -194,8 +172,8 @@ const verifyPaymentIntoDB = async (
         {
             params: {
                 val_id: payload.val_id,
-                store_id: "abc6a510484eae18",
-                store_passwd: "abc6a510484eae18@ssl",
+                store_id: config.ssl_store_id,
+                store_passwd: config.ssl_store_passwd,
                 format: "json",
             },
         },
@@ -232,6 +210,7 @@ const verifyPaymentIntoDB = async (
         await tx.rentalOrder.update({
             where: {
                 id: payment.rentalOrderId,
+                status: RentalOrderStatus.CONFIRMED,
             },
             data: {
                 status: RentalOrderStatus.PAID,
@@ -262,23 +241,249 @@ const verifyPaymentIntoDB = async (
 };
 
 const validateTransactionByTranId = async (tranId: string) => {
+    // const response = await axios.get(
+    //     "https://sandbox.sslcommerz.com/validator/api/merchantTransIDvalidationAPI.php",
+    //     {
+    //         params: {
+    //             tran_id: tranId,
+    //             store_id: config.ssl_store_id,
+    //             store_passwd: config.ssl_store_passwd,
+    //             format: "json",
+    //         },
+    //     },
+    // );
+
+    // return response.data;
+
+    const payment = await prisma.payment.findUnique({
+        where: {
+            tranId,
+        },
+        include: {
+            rentalOrder: {
+                include: {
+                    items: true,
+                },
+            },
+        },
+    });
+
+    if (!payment) {
+        throw new Error("Payment not found.");
+    }
+
+    // Already processed
+    if (payment.status === PaymentStatus.COMPLETED) {
+        return payment;
+    }
+
+    // Validate transaction from SSLCommerz
     const response = await axios.get(
         "https://sandbox.sslcommerz.com/validator/api/merchantTransIDvalidationAPI.php",
         {
             params: {
                 tran_id: tranId,
-                store_id: "abc6a510484eae18",
-                store_passwd: "abc6a510484eae18@ssl",
+                store_id: config.ssl_store_id,
+                store_passwd: config.ssl_store_passwd,
                 format: "json",
             },
         },
     );
 
-    return response.data;
+    const validationResponse = response.data;
+
+    if (validationResponse.APIConnect !== "DONE") {
+        throw new Error("Unable to connect with SSLCommerz validation server.");
+    }
+
+    if (
+        !validationResponse.no_of_trans_found ||
+        !validationResponse.element?.length
+    ) {
+        await prisma.payment.update({
+            where: {
+                tranId,
+            },
+            data: {
+                status: PaymentStatus.FAILED,
+                meta: validationResponse as Prisma.InputJsonValue,
+            },
+        });
+
+        throw new Error("Transaction not found.");
+    }
+
+    const transaction = validationResponse.element[0];
+
+    const isPaymentSuccessful =
+        transaction.status === "VALID" || transaction.status === "VALIDATED";
+
+    if (
+        isPaymentSuccessful &&
+        transaction.tran_id === payment.tranId &&
+        Number(transaction.amount) === Number(payment.amount) &&
+        transaction.currency.toUpperCase() === payment.currency.toUpperCase()
+    ) {
+        const result = await prisma.$transaction(async (tx) => {
+            await tx.payment.update({
+                where: {
+                    tranId,
+                },
+                data: {
+                    status: PaymentStatus.COMPLETED,
+                    paidAt: new Date(transaction.validated_on),
+                    meta: validationResponse as Prisma.InputJsonValue,
+                },
+            });
+
+            await tx.rentalOrder.update({
+                where: {
+                    id: payment.rentalOrderId,
+                },
+                data: {
+                    status: RentalOrderStatus.PAID,
+                },
+            });
+
+            for (const item of payment.rentalOrder.items) {
+                await tx.gear.update({
+                    where: {
+                        id: item.gearId,
+                    },
+                    data: {
+                        stockQuantity: {
+                            decrement: item.quantity,
+                        },
+                    },
+                });
+            }
+
+            return tx.payment.findUnique({
+                where: {
+                    tranId,
+                },
+            });
+        });
+
+        return result;
+    }
+
+    // console.log("transaction", transaction);
+
+    if (transaction.status === "PROCESSING")
+        throw new Error(`Transaction is in process`);
+
+    await prisma.payment.update({
+        where: {
+            tranId,
+        },
+        data: {
+            status: PaymentStatus.FAILED,
+            meta: validationResponse as Prisma.InputJsonValue,
+        },
+    });
+
+    throw new Error(`Payment verification failed. Callback Status`);
+};
+
+const getMyPaymentsFromDB = async (
+    customerId: string,
+    query: IGetPaymentsQuery,
+) => {
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const whereCondition = {
+        status: PaymentStatus.COMPLETED,
+        rentalOrder: {
+            customerId,
+        },
+    };
+
+    const [payments, total] = await Promise.all([
+        prisma.payment.findMany({
+            where: whereCondition,
+            skip,
+            take: limit,
+            orderBy: {
+                createdAt: "desc",
+            },
+            include: {
+                rentalOrder: {
+                    select: {
+                        id: true,
+                        rentalStartDate: true,
+                        rentalEndDate: true,
+                        totalAmount: true,
+                        status: true,
+                    },
+                },
+            },
+        }),
+
+        prisma.payment.count({
+            where: whereCondition,
+        }),
+    ]);
+
+    return {
+        meta: {
+            page,
+            limit,
+            total,
+        },
+        data: payments,
+    };
+};
+
+const getPaymentDetailsFromDB = async (
+    customerId: string,
+    rentalOrderId: string,
+) => {
+    const rentalOrder = await prisma.rentalOrder.findFirst({
+        where: {
+            id: rentalOrderId,
+            customerId,
+        },
+    });
+
+    if (!rentalOrder) {
+        throw new Error("Rental order not found.");
+    }
+
+    const payments = await prisma.payment.findMany({
+        where: {
+            rentalOrderId,
+            status: PaymentStatus.COMPLETED,
+        },
+        orderBy: {
+            createdAt: "desc",
+        },
+        select: {
+            id: true,
+            tranId: true,
+            amount: true,
+            currency: true,
+            status: true,
+            paidAt: true,
+            createdAt: true,
+            updatedAt: true,
+        },
+    });
+
+    return {
+        rentalOrderId,
+        totalAmount: rentalOrder.totalAmount,
+        rentalStatus: rentalOrder.status,
+        payments,
+    };
 };
 
 export const paymentsService = {
     initiatePaymentIntoDB,
     verifyPaymentIntoDB,
     validateTransactionByTranId,
+    getMyPaymentsFromDB,
+    getPaymentDetailsFromDB,
 };

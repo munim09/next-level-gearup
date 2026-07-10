@@ -15,4 +15,8 @@ router.post("/confirm/:status", paymentsController.verifyPayment);
 
 router.get("/check/:tranId", paymentsController.checkPayment);
 
+router.get("/", auth(Role.CUSTOMER), paymentsController.getMyPayments);
+
+router.get("/:id", auth(Role.CUSTOMER), paymentsController.getPaymentDetails);
+
 export const paymentsRoutes = router;

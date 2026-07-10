@@ -294,8 +294,82 @@ const getMyRentalOrdersFromDB = async (
     };
 };
 
+const cancelRentalOrderIntoDB = async (
+    customerId: string,
+    rentalOrderId: string,
+) => {
+    const order = await prisma.rentalOrder.findFirst({
+        where: {
+            id: rentalOrderId,
+            customerId,
+        },
+        include: {
+            items: true,
+        },
+    });
+
+    if (!order) {
+        throw new Error("Rental order not found.");
+    }
+
+    if (order.status !== RentalOrderStatus.PLACED) {
+        throw new Error("Only placed rental orders can be cancelled.");
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+        const updatedOrder = await tx.rentalOrder.update({
+            where: {
+                id: rentalOrderId,
+            },
+            data: {
+                status: RentalOrderStatus.CANCELLED,
+            },
+            include: {
+                customer: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+                provider: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+                items: {
+                    include: {
+                        gear: true,
+                    },
+                },
+            },
+        });
+
+        // Restore stock
+        for (const item of order.items) {
+            await tx.gear.update({
+                where: {
+                    id: item.gearId,
+                },
+                data: {
+                    stockQuantity: {
+                        increment: item.quantity,
+                    },
+                },
+            });
+        }
+
+        return updatedOrder;
+    });
+
+    return result;
+};
+
 export const rentalService = {
     createRentalOrderIntoDB,
     getRentalOrderDetailsFromDB,
     getMyRentalOrdersFromDB,
+    cancelRentalOrderIntoDB,
 };

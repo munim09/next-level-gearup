@@ -19,3 +19,7 @@ export interface IGetProviderOrdersQuery {
 export interface IUpdateRentalOrderStatusPayload {
     status: RentalOrderStatus;
 }
+
+export interface IUpdateGearStockPayload {
+    stockQuantity: number;
+}
