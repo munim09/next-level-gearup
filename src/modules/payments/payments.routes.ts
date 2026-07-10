@@ -11,7 +11,7 @@ router.post(
     paymentsController.createPayment,
 );
 
-router.post("/verify/:status", paymentsController.verifyPayment);
+router.post("/confirm/:status", paymentsController.verifyPayment);
 
 router.get("/check/:tranId", paymentsController.checkPayment);
 

@@ -63,16 +63,16 @@ const initiatePaymentIntoDB = async (
         throw new Error("Payment can only be initiated for confirmed orders.");
     }
 
-    // const completedPayment = await prisma.payment.findFirst({
-    //     where: {
-    //         rentalOrderId,
-    //         status: PaymentStatus.COMPLETED,
-    //     },
-    // });
+    const completedPayment = await prisma.payment.findFirst({
+        where: {
+            rentalOrderId,
+            status: PaymentStatus.COMPLETED,
+        },
+    });
 
-    // if (completedPayment) {
-    //     throw new Error("Payment already completed.");
-    // }
+    if (completedPayment) {
+        throw new Error("Payment already completed.");
+    }
 
     const tranId = crypto.randomUUID();
 
@@ -86,11 +86,11 @@ const initiatePaymentIntoDB = async (
 
         tran_id: tranId,
 
-        success_url: `${config.app_url}:${config.port}/api/payments/verify/success?tranId=${tranId}`,
+        success_url: `${config.app_url}:${config.port}/api/payments/confirm/success?tranId=${tranId}`,
 
-        fail_url: `${config.app_url}:${config.port}/api/payments/verify/fail?tranId=${tranId}`,
+        fail_url: `${config.app_url}:${config.port}/api/payments/confirm/fail?tranId=${tranId}`,
 
-        cancel_url: `${config.app_url}:${config.port}/api/payments/verify/cancel?tranId=${tranId}`,
+        cancel_url: `${config.app_url}:${config.port}/api/payments/confirm/cancel?tranId=${tranId}`,
 
         cus_name: order.customer.name,
         cus_email: order.customer.email,
