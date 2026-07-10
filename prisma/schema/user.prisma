@@ -10,6 +10,9 @@ model User {
    profile Profile?    
    
    gears Gear[]
+   
+   reviews Review[]
+
 
   customerOrders RentalOrder[] @relation("Customer")
   providerOrders RentalOrder[] @relation("Provider")

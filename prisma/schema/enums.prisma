@@ -22,3 +22,10 @@ enum RentalOrderStatus {
   RETURNED
   CANCELLED
 }
+
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
