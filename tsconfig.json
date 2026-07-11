@@ -1,10 +1,9 @@
 {
     "compilerOptions": {
         "outDir": "./dist",
-        "module": "ESNext",
+        "module": "esnext",
         // "moduleResolution": "bundler",
-        "target": "ES2023",
-        "types": ["node"],
+        "target": "esnext",
         "sourceMap": true,
         "declaration": true,
         "declarationMap": true,
