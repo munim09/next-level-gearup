@@ -37,6 +37,15 @@ const createRentalOrderIntoDB = async (
         );
     }
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    rentalStartDate.setHours(0, 0, 0, 0);
+    rentalEndDate.setHours(0, 0, 0, 0);
+    if (rentalStartDate < today) {
+        throw new Error("Rental start date cannot be in the past.");
+    }
+
     const startDateOnly = new Date(
         rentalStartDate.getFullYear(),
         rentalStartDate.getMonth(),

@@ -1,0 +1,6 @@
+Backend Repo     : https://github.com/munim09/next-level-gearup
+Live API         : 
+API Docs         : https://documenter.getpostman.com/view/564572/2sBY4LRhJn
+Demo Video       : 
+Admin Email      : admin@gmail.com
+Admin Password   : 123456
