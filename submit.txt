@@ -1,6 +1,6 @@
 Backend Repo     : https://github.com/munim09/next-level-gearup
 Live API         : https://gear-up-sandy.vercel.app/
 API Docs         : https://documenter.getpostman.com/view/564572/2sBY4LRhJn
-Demo Video       : 
+Demo Video       : https://www.loom.com/share/8b1d6391d0804970a8014e0f7d46f198
 Admin Email      : admin@gmail.com
 Admin Password   : 123456
