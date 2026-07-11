@@ -4,7 +4,7 @@ import {
     PaymentStatus,
     RentalOrderStatus,
 } from "../../../generated/prisma/enums";
-import config from "../../config/index";
+import config from "../../config";
 import { prisma } from "../../lib/prisma";
 import { IGetPaymentsQuery } from "./payments.interface";
 
