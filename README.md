@@ -166,29 +166,29 @@ Customers can review a gear only if:
 # 📁 Project Structure
 
 ```
-src/
-│
-├── app/
-│   ├── modules/
-│   │   ├── auth/
-│   │   ├── user/
-│   │   ├── gear/
-│   │   ├── category/
-│   │   ├── rental/
-│   │   ├── payment/
-│   │   ├── review/
-│   │   └── admin/
-│   │
-│   ├── middlewares/
-│   ├── routes/
-│   ├── utils/
-│   ├── config/
-│   └── errors/
-│
+next-level-gearup/
 ├── prisma/
+│   ├── migrations/
+│   └── schema/
 │
-├── server.ts
-└── app.ts
+├── src/
+│   ├── config/                 # Application configuration
+│   ├── lib/                    # Third-party libraries & helpers
+│   ├── middlewares/            # Express middlewares
+│   ├── modules/
+│   │   ├── admin/              # Admin module
+│   │   ├── auth/               # Authentication & Authorization
+│   │   ├── gear/               # Gear management
+│   │   ├── payments/           # Payment integration
+│   │   ├── provider/           # Provider operations
+│   │   ├── rentals/            # Rental order management
+│   │   ├── reviews/            # Gear reviews
+│   │   └── utils/              # Shared module utilities
+│   │
+│   ├── app.ts                  # Express application
+│   └── server.ts               # Server entry point
+│
+├── .env
 ```
 
 ---

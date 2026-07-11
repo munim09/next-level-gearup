@@ -12,7 +12,7 @@ import { gearService } from "./modules/gear/gear.service";
 import { paymentsRoutes } from "./modules/payments/payments.routes";
 import { providerRoutes } from "./modules/provider/provider.routes";
 import { rentalsRoutes } from "./modules/rentals/rentals.routes";
-import { reviewRoutes } from "./reviews/review.routes";
+import { reviewRoutes } from "./modules/reviews/review.routes";
 import { catchAsync } from "./utils/catchAsync";
 import { sendResponse } from "./utils/sendResponse";
 

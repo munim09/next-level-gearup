@@ -1,5 +1,5 @@
-import { RentalOrderStatus } from "../../generated/prisma/enums";
-import { prisma } from "../lib/prisma";
+import { RentalOrderStatus } from "../../../generated/prisma/enums";
+import { prisma } from "../../lib/prisma";
 import { ICreateReviewPayload } from "./review.interface";
 
 const createReviewIntoDB = async (
