@@ -1,9 +1,9 @@
 {
     "compilerOptions": {
         "outDir": "./dist",
-        "module": "ESNext",
+        "module": "esnext",
         "moduleResolution": "bundler",
-        "target": "ES2023",
+        "target": "esnext",
         "types": ["node"],
         "sourceMap": true,
         "declaration": true,
@@ -14,7 +14,7 @@
         "noUncheckedSideEffectImports": true,
         "moduleDetection": "force",
         "skipLibCheck": true
-    },
+    }
     // "include": ["src/**/*"],
-    "exclude": ["node_modules", "dist"]
+    // "exclude": ["node_modules", "dist"]
 }
