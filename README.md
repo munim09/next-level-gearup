@@ -157,20 +157,9 @@ Customers can review a gear only if:
 - JWT
 - bcrypt
 
-## Validation
-
-- Zod
-
 ## Payment
 
-- Stripe
 - SSLCommerz
-
-## Development Tools
-
-- ESLint
-- Prettier
-- ts-node-dev
 
 ---
 
