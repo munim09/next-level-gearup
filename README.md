@@ -204,6 +204,7 @@ Main entities:
 - RentalOrderItem
 - Payment
 - Review
+- Profile
 
 ---
 
@@ -442,19 +443,6 @@ Production
 
 ```bash
 npm start
-```
-
----
-
-# 🧪 Scripts
-
-```bash
-npm run dev
-npm run build
-npm run start
-npm run lint
-npm run lint:fix
-npm run format
 ```
 
 ---
