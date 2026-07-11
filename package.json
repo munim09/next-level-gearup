@@ -4,7 +4,7 @@
     "description": "",
     "license": "ISC",
     "author": "",
-    "type": "module",
+    "type": "commonjs",
     "main": "server.ts",
     "scripts": {
         "dev": "tsx watch src/server.ts",
