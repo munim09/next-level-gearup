@@ -1,7 +1,6 @@
 import bcrypt from "bcryptjs";
 import { JwtPayload, SignOptions } from "jsonwebtoken";
 import { ActiveStatus, Role } from "../../../generated/prisma/enums";
-import config from "../../config";
 import { prisma } from "../../lib/prisma";
 import { jwtUtils } from "../../utils/jwt";
 import { ILoginUser, RegisterUserPayload } from "./auth.interface";
@@ -36,7 +35,7 @@ const registerUserIntoDB = async (payload: RegisterUserPayload) => {
 
     const hashedPassword = await bcrypt.hash(
         password,
-        Number(config.bcrypt_salt_rounds),
+        Number(process.env.BCRYPT_SALT_ROUNDS),
     );
 
     const createdUser = await prisma.user.create({
@@ -113,8 +112,8 @@ const loginUser = async (payload: ILoginUser) => {
 
     const accessToken = jwtUtils.createToken(
         jwtPayload,
-        config.jwt_access_secret as string,
-        config.jwt_access_expires_in as SignOptions,
+        process.env.JWT_ACCESS_SECRET as string,
+        process.env.JWT_ACCESS_EXPIRES_IN as SignOptions,
     );
 
     // const refreshToken = jwt.sign(
@@ -127,8 +126,8 @@ const loginUser = async (payload: ILoginUser) => {
 
     const refreshToken = jwtUtils.createToken(
         jwtPayload,
-        config.jwt_refresh_secret as string,
-        config.jwt_refresh_expires_in as SignOptions,
+        process.env.JWT_REFRESH_SECRET as string,
+        process.env.JWT_REFRESH_EXPIRES_IN as SignOptions,
     );
 
     return {
@@ -140,7 +139,7 @@ const loginUser = async (payload: ILoginUser) => {
 const refreshToken = async (refreshToken: string) => {
     const verifiedRefreshToken = jwtUtils.verifyToken(
         refreshToken,
-        config.jwt_refresh_secret as string,
+        process.env.JWT_REFRESH_SECRET as string,
     );
 
     if (!verifiedRefreshToken.success) {
@@ -168,8 +167,8 @@ const refreshToken = async (refreshToken: string) => {
 
     const accessToken = jwtUtils.createToken(
         jwtPayload,
-        config.jwt_access_secret as string,
-        config.jwt_access_expires_in as SignOptions,
+        process.env.JWT_REFRESH_SECRET as string,
+        process.env.JWT_ACCESS_EXPIRES_IN as SignOptions,
     );
 
     return { accessToken };

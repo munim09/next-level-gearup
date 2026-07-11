@@ -4,7 +4,6 @@ import {
     PaymentStatus,
     RentalOrderStatus,
 } from "../../../generated/prisma/enums";
-import config from "../../config";
 import { prisma } from "../../lib/prisma";
 import { IGetPaymentsQuery } from "./payments.interface";
 
@@ -55,8 +54,8 @@ const initiatePaymentIntoDB = async (
     const tranId = crypto.randomUUID();
 
     const paymentData = {
-        store_id: config.ssl_store_id,
-        store_passwd: config.ssl_store_passwd,
+        store_id: process.env.SSL_STORE_ID,
+        store_passwd: process.env.SSL_STORE_PASSWD,
 
         total_amount: Number(order.totalAmount),
 
@@ -64,11 +63,11 @@ const initiatePaymentIntoDB = async (
 
         tran_id: tranId,
 
-        success_url: `${config.app_url}/api/payments/confirm/success?tranId=${tranId}`,
+        success_url: `${process.env.APP_URL}/api/payments/confirm/success?tranId=${tranId}`,
 
-        fail_url: `${config.app_url}/api/payments/confirm/fail?tranId=${tranId}`,
+        fail_url: `${process.env.APP_URL}/api/payments/confirm/fail?tranId=${tranId}`,
 
-        cancel_url: `${config.app_url}/api/payments/confirm/cancel?tranId=${tranId}`,
+        cancel_url: `${process.env.APP_URL}/api/payments/confirm/cancel?tranId=${tranId}`,
 
         cus_name: order.customer.name,
         cus_email: order.customer.email,
@@ -172,8 +171,8 @@ const verifyPaymentIntoDB = async (
         {
             params: {
                 val_id: payload.val_id,
-                store_id: config.ssl_store_id,
-                store_passwd: config.ssl_store_passwd,
+                store_id: process.env.SSL_STORE_ID,
+                store_passwd: process.env.SSL_STORE_PASSWD,
                 format: "json",
             },
         },
@@ -246,8 +245,8 @@ const validateTransactionByTranId = async (tranId: string) => {
     //     {
     //         params: {
     //             tran_id: tranId,
-    //             store_id: config.ssl_store_id,
-    //             store_passwd: config.ssl_store_passwd,
+    //             store_id: process.env.SSL_STORE_ID,
+    //             store_passwd: process.env.SSL_STORE_PASSWD,
     //             format: "json",
     //         },
     //     },
@@ -283,8 +282,8 @@ const validateTransactionByTranId = async (tranId: string) => {
         {
             params: {
                 tran_id: tranId,
-                store_id: config.ssl_store_id,
-                store_passwd: config.ssl_store_passwd,
+                store_id: process.env.SSL_STORE_ID,
+                store_passwd: process.env.SSL_STORE_PASSWD,
                 format: "json",
             },
         },
