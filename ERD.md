@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the database schema for the gear rental platform, based on the Prisma data model.
+This document describes the database schema for the gear rental platform.
 
 ## Entity Relationship Diagram
 
